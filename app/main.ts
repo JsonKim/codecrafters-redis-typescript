@@ -7,7 +7,15 @@ console.log("Logs from your program will appear here!");
 const server: net.Server = net.createServer((connection: net.Socket) => {
   // Handle connection
   connection.on("data", (data: Buffer) => {
-    connection.write("+PONG\r\n");
+    const command = data.toString().trim().split("\r\n");
+    if (command.length === 3 && command[2] === "PING") {
+      connection.write("+PONG\r\n");
+      return;
+    }
+    if (command.length === 5 && command[2] === "ECHO") {
+      connection.write(`+${command[4]}\r\n`);
+      return;
+    }
   });
 });
 
