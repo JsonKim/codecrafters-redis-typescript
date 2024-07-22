@@ -1,8 +1,24 @@
 import * as net from "net";
 import { DataType, parse } from "./parser";
-import { O } from "@mobily/ts-belt";
+import { O, pipe } from "@mobily/ts-belt";
 
-const database = new Map<string, string>();
+type Value = {
+  data: string;
+  createAt: number;
+  px: O.Option<number>;
+};
+
+const makeValue = (
+  data: string,
+  createAt: number,
+  px: O.Option<number> = O.None
+): Value => ({
+  data,
+  createAt,
+  px,
+});
+
+const database = new Map<string, Value>();
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
@@ -31,22 +47,41 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
       }
     }
 
-    if (command.type === DataType.Array && command.value.length === 3) {
-      if (command.value[0].value === "SET") {
-        const [_, key, value] = command.value;
-        database.set(key.value as string, value.value as string);
-        connection.write("+OK\r\n");
-        return;
-      }
+    if (command.type === DataType.Array && command.value[0].value === "SET") {
+      const [_, key, value, __, px] = command.value;
+      database.set(
+        key.value as string,
+        makeValue(
+          value.value as string,
+          Date.now(),
+          px ? O.Some(Number(px.value)) : O.None
+        )
+      );
+      connection.write("+OK\r\n");
+      return;
     }
 
     if (command.type === DataType.Array && command.value.length === 2) {
       if (command.value[0].value === "GET") {
         const key = command.value[1].value as string;
         const value = database.get(key);
-        if (value) {
-          connection.write(`$${value.length}\r\n${value}\r\n`);
+        if (!value) {
+          connection.write("$-1\r\n");
+          return;
         }
+
+        const expiredAt = pipe(
+          value.px,
+          O.map((px) => value.createAt + px)
+        );
+
+        if (expiredAt && expiredAt < Date.now()) {
+          connection.write("$-1\r\n");
+          return;
+        }
+
+        connection.write(`$${value.data.length}\r\n${value.data}\r\n`);
+
         return;
       }
     }
