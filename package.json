@@ -6,9 +6,11 @@
     "dev": "bun run app/main.ts"
   },
   "dependencies": {
+    "@mobily/ts-belt": "^3.13.1",
     "async": "^3.2.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.1.6",
     "@types/node": "^20.14.10"
   }
 }
