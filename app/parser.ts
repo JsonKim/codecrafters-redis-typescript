@@ -33,6 +33,22 @@ export type ArrayData = {
 
 export type Data = NumberData | SimpleStringData | BulkStringData | ArrayData;
 
+export const valueToArray = (value: Data): O.Option<Data[]> => {
+  if (value.type !== DataType.Array) {
+    return O.None;
+  }
+
+  return O.Some(value.value);
+};
+
+export const valueToString = (value: Data): O.Option<string> => {
+  if (typeof value.value !== "string") {
+    return O.None;
+  }
+
+  return O.Some(value.value);
+};
+
 export type ParseState = {
   input: Buffer;
   index: number;
