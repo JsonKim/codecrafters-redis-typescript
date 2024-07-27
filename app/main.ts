@@ -5,6 +5,8 @@ import { parseCliArgs } from "./cli-args";
 import { getByKey, makeValue, setByKey } from "./database";
 import { makeBulkString } from "./make-values";
 
+type Role = "master" | "slave";
+
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
 
@@ -69,12 +71,14 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     }
 
     if (command === "INFO") {
-      connection.write(makeBulkString("role:master"));
+      const args = parseCliArgs(process.argv);
+      const role: Role = args.replicaof === "" ? "master" : "slave";
+
+      connection.write(makeBulkString(`role:${role}`));
       return;
     }
   });
 });
 
 const args = parseCliArgs(process.argv);
-
 server.listen(args.port, "127.0.0.1");

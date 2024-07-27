@@ -1,17 +1,19 @@
 type CliArgs = {
   port: number;
   directory: string;
+  replicaof: string;
 };
 
 export const parseCliArgs = (args: string[]): CliArgs => {
   const defaultArgs: CliArgs = {
     port: 6379,
     directory: "./public",
+    replicaof: "",
   };
 
   for (let i = 0; i < args.length; i += 2) {
-    const key = args[i].replace(/^--/, "");
-    const value = args[i + 1];
+    const key = args[i]!.replace(/^--/, "");
+    const value = args[i + 1]!;
 
     switch (key) {
       case "port":
@@ -22,6 +24,9 @@ export const parseCliArgs = (args: string[]): CliArgs => {
         break;
       case "directory":
         defaultArgs.directory = value;
+        break;
+      case "replicaof":
+        defaultArgs.replicaof = value;
         break;
     }
   }
