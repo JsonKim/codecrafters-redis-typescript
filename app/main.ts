@@ -11,28 +11,31 @@ console.log("Logs from your program will appear here!");
 const server: net.Server = net.createServer((connection: net.Socket) => {
   // Handle connection
   connection.on("data", (data: Buffer) => {
-    const command = parse(data);
+    const parsedData = parse(data);
 
-    if (O.isNone(command)) {
+    if (O.isNone(parsedData)) {
       return;
     }
 
-    if (command.type === DataType.Array && command.value.length === 1) {
-      if ((command.value[0].value = "PONG")) {
+    if (parsedData.type === DataType.Array && parsedData.value.length === 1) {
+      if ((parsedData.value[0].value = "PONG")) {
         connection.write("+PONG\r\n");
         return;
       }
     }
 
-    if (command.type === DataType.Array && command.value.length === 2) {
-      if (command.value[0].value === "ECHO") {
-        connection.write(`+${command.value[1].value}\r\n`);
+    if (parsedData.type === DataType.Array && parsedData.value.length === 2) {
+      if (parsedData.value[0].value === "ECHO") {
+        connection.write(`+${parsedData.value[1].value}\r\n`);
         return;
       }
     }
 
-    if (command.type === DataType.Array && command.value[0].value === "SET") {
-      const [_, key, value, __, px] = command.value;
+    if (
+      parsedData.type === DataType.Array &&
+      parsedData.value[0].value === "SET"
+    ) {
+      const [_, key, value, __, px] = parsedData.value;
       setByKey(
         key.value as string,
         makeValue(
@@ -45,9 +48,9 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
       return;
     }
 
-    if (command.type === DataType.Array && command.value.length === 2) {
-      if (command.value[0].value === "GET") {
-        const key = command.value[1].value as string;
+    if (parsedData.type === DataType.Array && parsedData.value.length === 2) {
+      if (parsedData.value[0].value === "GET") {
+        const key = parsedData.value[1].value as string;
         const value = getByKey(key);
         if (!value) {
           connection.write("$-1\r\n");
