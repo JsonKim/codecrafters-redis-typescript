@@ -20,7 +20,7 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     const rest = pipe(parsedData, valueToArray, O.getExn);
     const command = pipe(rest, A.get(0), O.flatMap(valueToString), O.getExn);
 
-    if (command === "PONG") {
+    if (command === "PING") {
       connection.write("+PONG\r\n");
       return;
     }
