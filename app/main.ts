@@ -1,6 +1,7 @@
 import * as net from "net";
 import { DataType, parse } from "./parser";
 import { O, pipe } from "@mobily/ts-belt";
+import { parseCliArgs } from "./cli-args";
 
 type Value = {
   data: string;
@@ -88,4 +89,6 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
   });
 });
 
-server.listen(6379, "127.0.0.1");
+const args = parseCliArgs(process.argv);
+
+server.listen(args.port, "127.0.0.1");
