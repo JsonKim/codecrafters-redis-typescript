@@ -2,24 +2,7 @@ import * as net from "net";
 import { DataType, parse } from "./parser";
 import { O, pipe } from "@mobily/ts-belt";
 import { parseCliArgs } from "./cli-args";
-
-type Value = {
-  data: string;
-  createAt: number;
-  px: O.Option<number>;
-};
-
-const makeValue = (
-  data: string,
-  createAt: number,
-  px: O.Option<number> = O.None
-): Value => ({
-  data,
-  createAt,
-  px,
-});
-
-const database = new Map<string, Value>();
+import { getByKey, makeValue, setByKey } from "./database";
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
@@ -50,7 +33,7 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
 
     if (command.type === DataType.Array && command.value[0].value === "SET") {
       const [_, key, value, __, px] = command.value;
-      database.set(
+      setByKey(
         key.value as string,
         makeValue(
           value.value as string,
@@ -65,7 +48,7 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     if (command.type === DataType.Array && command.value.length === 2) {
       if (command.value[0].value === "GET") {
         const key = command.value[1].value as string;
-        const value = database.get(key);
+        const value = getByKey(key);
         if (!value) {
           connection.write("$-1\r\n");
           return;
