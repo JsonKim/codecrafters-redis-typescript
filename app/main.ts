@@ -1,8 +1,9 @@
 import * as net from "net";
-import { DataType, parse, valueToArray, valueToString } from "./parser";
+import { parse, valueToArray, valueToString } from "./parser";
 import { A, O, pipe } from "@mobily/ts-belt";
 import { parseCliArgs } from "./cli-args";
 import { getByKey, makeValue, setByKey } from "./database";
+import { makeBulkString } from "./make-values";
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
@@ -64,6 +65,11 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
 
       connection.write(`$${value.data.length}\r\n${value.data}\r\n`);
 
+      return;
+    }
+
+    if (command === "INFO") {
+      connection.write(makeBulkString("role:master"));
       return;
     }
   });
